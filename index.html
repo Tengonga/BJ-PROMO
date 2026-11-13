@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BlackJack Smashburger · Levanta tu carta</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --red:#d7192a; --red-d:#9e0f1c; --ink:#0d0d0d; --felt:#151515; --paper:#f7f1e6; --gold:#e8c46a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { min-height:100%; }
+  body {
+    font-family:Inter,system-ui,sans-serif; color:var(--paper); background:var(--ink);
+    background-image:
+      radial-gradient(ellipse at 50% -10%, rgba(215,25,42,.35), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 14px);
+    display:flex; flex-direction:column; align-items:center; padding:28px 18px 40px;
+  }
+  .brand { font-family:Anton,Impact,sans-serif; letter-spacing:.06em; font-size:15px; color:var(--gold); text-transform:uppercase; display:flex; gap:8px; align-items:center; }
+  .suits { color:var(--red); letter-spacing:4px; }
+  h1 { font-family:Anton,Impact,sans-serif; font-weight:400; text-transform:uppercase; font-size:clamp(44px,13vw,72px); line-height:.92; text-align:center; margin:18px 0 10px; }
+  h1 span { color:var(--red); }
+  .lead { text-align:center; max-width:340px; opacity:.85; line-height:1.45; }
+  .counter { margin-top:14px; font-size:13px; font-weight:600; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); padding:6px 12px; border-radius:99px; }
+  .counter b { color:var(--gold); }
+
+  .panel { width:100%; max-width:380px; margin-top:26px; }
+  form { display:flex; flex-direction:column; gap:12px; }
+  label.f { font-size:13px; font-weight:600; opacity:.8; }
+  input[type=text] {
+    width:100%; font:600 17px Inter,sans-serif; padding:15px 16px; border-radius:12px;
+    border:2px solid rgba(255,255,255,.15); background:#1d1d1d; color:var(--paper); outline:none;
+  }
+  input[type=text]:focus { border-color:var(--red); }
+  .check { display:flex; gap:10px; font-size:13px; line-height:1.4; opacity:.85; align-items:flex-start; }
+  .check input { margin-top:2px; width:18px; height:18px; accent-color:var(--red); flex-shrink:0; }
+  .check a { color:var(--gold); }
+  button.cta {
+    font:400 24px Anton,Impact,sans-serif; letter-spacing:.04em; text-transform:uppercase;
+    padding:16px; border:0; border-radius:12px; color:#fff; cursor:pointer;
+    background:linear-gradient(180deg,var(--red),var(--red-d)); box-shadow:0 6px 0 #5e0911, 0 12px 30px rgba(215,25,42,.35);
+    transition:transform .08s;
+  }
+  button.cta:active { transform:translateY(3px); box-shadow:0 3px 0 #5e0911; }
+  button.cta:disabled { opacity:.6; cursor:wait; }
+  .msg { min-height:20px; font-size:14px; text-align:center; color:#ff8a8a; font-weight:600; }
+  .note { font-size:12px; opacity:.55; text-align:center; line-height:1.4; }
+
+  /* ---------- Carta ---------- */
+  .stage { perspective:1200px; width:100%; max-width:330px; margin:26px auto 0; }
+  .card { position:relative; width:100%; aspect-ratio:5/7.3; transform-style:preserve-3d; transition:transform .9s cubic-bezier(.2,.8,.2,1); }
+  .card.flip { transform:rotateY(180deg); }
+  .face { position:absolute; inset:0; border-radius:18px; backface-visibility:hidden; -webkit-backface-visibility:hidden; box-shadow:0 20px 50px rgba(0,0,0,.6); }
+  .back {
+    background:var(--red); border:10px solid var(--paper);
+    background-image:repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 6px, transparent 6px 12px);
+    display:grid; place-items:center;
+  }
+  .back div { font:400 56px Anton,sans-serif; color:var(--paper); border:3px solid var(--paper); border-radius:50%; width:110px; height:110px; display:grid; place-items:center; background:var(--red); }
+  .front { transform:rotateY(180deg); background:var(--paper); color:var(--ink); padding:18px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .corner { position:absolute; font:400 26px/0.9 Anton,sans-serif; color:var(--red); text-align:center; }
+  .corner.tl { top:14px; left:14px; } .corner.br { bottom:14px; right:14px; transform:rotate(180deg); }
+  .won { margin-top:22px; font-size:12px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; opacity:.6; }
+  .prize { font:400 clamp(40px,12vw,52px)/1 Anton,sans-serif; text-transform:uppercase; color:var(--red); margin:4px 0 2px; }
+  .emoji { font-size:40px; }
+  #qr { margin:10px 0 6px; padding:6px; background:#fff; border-radius:8px; }
+  #qr img, #qr canvas { display:block; width:128px !important; height:128px !important; }
+  .code { font:800 22px ui-monospace,Menlo,monospace; letter-spacing:.08em; }
+  .valid { font-size:12px; margin-top:auto; opacity:.7; line-height:1.4; padding:0 34px 26px; }
+  .after { margin-top:22px; text-align:center; font-size:14px; opacity:.85; line-height:1.5; max-width:340px; }
+  .after strong { color:var(--gold); }
+  .hidden { display:none !important; }
+  .closed { margin-top:30px; text-align:center; max-width:340px; line-height:1.5; }
+  .closed h2 { font:400 34px Anton,sans-serif; text-transform:uppercase; color:var(--red); margin-bottom:8px; }
+  footer { margin-top:auto; padding-top:34px; font-size:12px; opacity:.5; text-align:center; }
+  footer a { color:inherit; }
+</style>
+</head>
+<body>
+  <div class="brand"><span class="suits">♠♥</span> BlackJack Smashburger <span class="suits">♦♣</span></div>
+  <h1>Levanta<br>tu <span>carta</span></h1>
+  <p class="lead">Smash sin faroles: deja tu email o móvil y descubre si te llevas una <strong>burger</strong> o unas <strong>patatas</strong> gratis.</p>
+  <div class="counter hidden" id="counter">Quedan <b id="left">—</b> de 1000 cartas</div>
+
+  <!-- Formulario -->
+  <section class="panel" id="formPanel">
+    <form id="form" novalidate>
+      <label class="f" for="contact">Email o móvil</label>
+      <input type="text" id="contact" inputmode="email" autocomplete="email" placeholder="tu@email.com o 612 345 678" required>
+      <label class="check"><input type="checkbox" id="consent">
+        <span>Acepto las <a id="basesLink" href="bases.html" target="_blank">bases de la promoción</a> y la <a id="privLink" href="#" target="_blank">política de privacidad</a>. Mis datos solo se usan para gestionar esta promoción.</span>
+      </label>
+      <button class="cta" type="submit" id="btn">Levantar carta</button>
+      <p class="msg" id="msg" role="alert"></p>
+      <p class="note">Una carta por persona. Premio canjeable en Ontinyent o Alcoy.</p>
+    </form>
+  </section>
+
+  <!-- Carta -->
+  <section class="stage hidden" id="stage">
+    <div class="card" id="card">
+      <div class="face back"><div>BJ</div></div>
+      <div class="face front">
+        <div class="corner tl" id="c1">A<br>♥</div>
+        <div class="corner br" id="c2">A<br>♥</div>
+        <div class="won">Te ha tocado</div>
+        <div class="emoji" id="emoji">🍔</div>
+        <div class="prize" id="prize">Burger</div>
+        <div id="qr"></div>
+        <div class="code" id="code">BJ-XXXX-XXXX</div>
+        <div class="valid" id="valid"></div>
+      </div>
+    </div>
+  </section>
+  <p class="after hidden" id="after">Haz <strong>captura de pantalla</strong> y enséñala en caja. El código solo se puede canjear una vez.</p>
+
+  <!-- Cerrado / agotado -->
+  <section class="closed hidden" id="closed"><h2 id="closedTitle"></h2><p id="closedText"></p></section>
+
+  <footer><a id="webLink" href="#">blackjacksmash.es</a> · Promoción limitada a 1000 tickets</footer>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+(() => {
+  const C = window.PROMO_CONFIG;
+  const KEY = 'bj_promo_ticket';
+  const $ = id => document.getElementById(id);
+  $('privLink').href = C.PRIVACY_URL; $('basesLink').href = C.BASES_URL; $('webLink').href = C.WEB_URL;
+
+  const rpc = async (fn, body = {}) => {
+    const r = await fetch(`${C.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: C.SUPABASE_ANON_KEY, Authorization: `Bearer ${C.SUPABASE_ANON_KEY}` },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  };
+
+  const fmtDate = iso => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } },
+    set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} }
+  };
+
+  function showClosed(title, text) {
+    $('formPanel').classList.add('hidden');
+    $('closedTitle').textContent = title; $('closedText').textContent = text;
+    $('closed').classList.remove('hidden');
+  }
+
+  function showTicket(t, animate) {
+    $('formPanel').classList.add('hidden');
+    $('counter').classList.add('hidden');
+    const burger = t.prize === 'burger';
+    $('prize').textContent = burger ? 'Burger' : 'Patatas';
+    $('emoji').textContent = burger ? '🍔' : '🍟';
+    const corner = burger ? 'A<br>♥' : 'K<br>♠';
+    $('c1').innerHTML = corner; $('c2').innerHTML = corner;
+    $('code').textContent = t.code;
+    $('valid').textContent = t.ends_at ? `Válido hasta el ${fmtDate(t.ends_at)} en BlackJack Ontinyent o Alcoy.` : 'Válido en BlackJack Ontinyent o Alcoy.';
+    $('qr').innerHTML = '';
+    try { new QRCode($('qr'), { text: t.code, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M }); }
+    catch { $('qr').classList.add('hidden'); }
+    $('stage').classList.remove('hidden');
+    $('after').classList.remove('hidden');
+    if (animate) setTimeout(() => $('card').classList.add('flip'), 350);
+    else $('card').classList.add('flip');
+  }
+
+  // Al entrar: ¿ya tiene ticket en este móvil? ¿promo abierta?
+  const saved = store.get();
+  if (saved && saved.code) { showTicket(saved, false); return; }
+
+  rpc('tickets_left').then(s => {
+    const now = new Date();
+    if (now < new Date(s.starts_at)) return showClosed('Aún no', `La promoción empieza el ${fmtDate(s.starts_at)}. ¡Vuelve entonces!`);
+    if (now > new Date(s.ends_at))   return showClosed('Se acabó', 'La promoción ha terminado. ¡Gracias por jugar!');
+    if (s.left <= 0)                 return showClosed('Agotado', 'Ya se han repartido las 1000 cartas. ¡Gracias por jugar!');
+    $('left').textContent = s.left; $('counter').classList.remove('hidden');
+  }).catch(() => {});
+
+  // Teclado numérico si empieza por número
+  $('contact').addEventListener('input', e => {
+    const v = e.target.value;
+    e.target.inputMode = /^[\d+\s]/.test(v) ? 'tel' : 'email';
+  });
+
+  $('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const contact = $('contact').value.trim();
+    $('msg').textContent = '';
+    if (!contact) return $('msg').textContent = 'Escribe tu email o móvil.';
+    if (!$('consent').checked) return $('msg').textContent = 'Tienes que aceptar las bases y la privacidad.';
+    $('btn').disabled = true; $('btn').textContent = 'Barajando…';
+    try {
+      const r = await rpc('claim_ticket', { p_contact: contact, p_consent: true });
+      switch (r.status) {
+        case 'ok':
+          store.set({ code: r.code, prize: r.prize, ends_at: r.ends_at });
+          showTicket(r, true); break;
+        case 'already':         $('msg').textContent = 'Ese email o móvil ya tiene su carta. Solo una por persona.'; break;
+        case 'invalid_contact': $('msg').textContent = 'Revisa el email o el móvil (9 cifras, empieza por 6 o 7).'; break;
+        case 'sold_out':        showClosed('Agotado', 'Se han repartido las 1000 cartas. ¡Por los pelos!'); break;
+        case 'ended':           showClosed('Se acabó', 'La promoción ha terminado.'); break;
+        case 'not_started':     showClosed('Aún no', `La promoción empieza el ${fmtDate(r.starts_at)}.`); break;
+        default:                $('msg').textContent = 'Algo ha fallado. Inténtalo de nuevo.';
+      }
+    } catch {
+      $('msg').textContent = 'Sin conexión. Inténtalo de nuevo.';
+    } finally {
+      $('btn').disabled = false; $('btn').textContent = 'Levantar carta';
+    }
+  });
+})();
+</script>
+</body>
+</html>
