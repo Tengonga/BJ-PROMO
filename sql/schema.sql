@@ -216,7 +216,7 @@ values (
   1,
   1000,                                   -- tickets totales
   200,                                    -- de ellos, burgers (el resto patatas)
-  '2026-11-20 00:00:00+01',               -- inicio
+  '2026-11-13 00:00:00+01',               -- inicio
   '2026-12-20 23:59:59+01',               -- fin
   extensions.crypt('CAMBIA-ESTA-CLAVE', extensions.gen_salt('bf'))
 )
